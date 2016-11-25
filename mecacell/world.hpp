@@ -255,6 +255,17 @@ template <typename Cell, typename Integrator = Euler> class World {
 	}
 
 	/**
+     * @brief simulation reset method
+     * 
+     * Restores the world to a blank start-ready state
+     */
+    void reset (void) {
+        cells.clear();
+        newCells.clear();
+        frame = 0;
+    }
+	
+	/**
 	 * @brief main update method
 	 *
 	 * this should be manually called at each time step by the user. It calls the core

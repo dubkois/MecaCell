@@ -161,7 +161,9 @@ Window {
 						acceptedButtons: Qt.LeftButton
 						anchors.fill: parent
 						hoverEnabled: true
-						onClicked: {}
+						onClicked: {
+                            glview.reset();
+                        }
 					}
 				}
 				Text {

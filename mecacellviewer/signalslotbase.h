@@ -42,6 +42,7 @@ class SignalSlotBase : public QQuickItem {
 	QVariantMap stats, guiCtrl;
 	bool worldUpdate = false;
 	bool loopStep = false;
+    bool shouldReset = false;
 	std::set<Qt::Key> keyDown, keyPress;
 	int mouseWheel = 0;
 	QSize viewportSize;
@@ -120,6 +121,7 @@ class SignalSlotBase : public QQuickItem {
 		if (window()) window()->update();
 	}
 
+	void reset() { shouldReset = true; }
 	void step() { loopStep = true; }
 	void setWorldUpdate(bool u) { worldUpdate = u; }
 	virtual void handleWindowChanged(QQuickWindow *win) {

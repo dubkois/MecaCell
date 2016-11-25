@@ -97,6 +97,7 @@ template <typename Scenario> class Viewer : public SignalSlotRenderer {
 	Cell *selectedCell = nullptr;
 	bool worldUpdate = false;
 	bool loopStep = false;
+    bool shouldReset = false;
 	double fpsRefreshRate = 0.4;
 	QVariantMap guiCtrl, stats;
 	QList<QVariant> enabledPaintSteps;
@@ -250,6 +251,8 @@ template <typename Scenario> class Viewer : public SignalSlotRenderer {
 		worldUpdate = b->worldUpdate;
 		loopStep = b->loopStep;
 		b->loopStep = false;
+		shouldReset = b->shouldReset;
+		b->shouldReset = false;
 
 		guiCtrl = b->getGuiCtrl();
 
@@ -331,6 +334,12 @@ template <typename Scenario> class Viewer : public SignalSlotRenderer {
 		viewMatrix = camera.getViewMatrix();
 		projectionMatrix = camera.getProjectionMatrix((float)viewportSize.width() /
 		                                              (float)viewportSize.height());
+        
+		if (shouldReset) {
+			scenario.getWorld().reset();
+			scenario.reset();
+		}
+        
 		// updating scenario
 		if (loopStep || worldUpdate) {
 			for (auto &f : hooks[Hooks::preLoop]) f(this);
@@ -753,6 +762,9 @@ template <typename Scenario> class Viewer : public SignalSlotRenderer {
 		view->show();
 		for (auto &f : hooks[Hooks::preLoad]) f(this);
 		QObject::connect(view, SIGNAL(closing(QQuickCloseEvent *)), &app, SLOT(quit()));
+        
+        scenario.reset();
+        
 		return app.exec();
 	}
 };
