@@ -36,6 +36,13 @@ bool Vector3D::isZero() const {
 	return (coords[0] == 0.0 && coords[1] == 0.0 && coords[2] == 0.0);
 }
 
+double Vector3D::length() const {
+	return sqrt(coords[0] * coords[0] + coords[1] * coords[1] + coords[2] * coords[2]);
+}
+double Vector3D::sqlength() const {
+	return coords[0] * coords[0] + coords[1] * coords[1] + coords[2] * coords[2];
+}
+
 void Vector3D::normalize() { *this /= length(); }
 
 std::string Vector3D::toString() const {
