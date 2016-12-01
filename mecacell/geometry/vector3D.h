@@ -15,7 +15,7 @@ class Vector3D {
 	std::array<double, 3> coords;
 
 	static const int dimension = 3;
-	inline Vector3D(double a, double b, double c) : coords{{a, b, c}} {}
+	constexpr Vector3D(double a, double b, double c) : coords{{a, b, c}} {}
 	template <typename T>
 	Vector3D(const T &otherV) : coords{{otherV.x(), otherV.y(), otherV.z()}} {}
 	inline Vector3D() : coords{{0, 0, 0}} {}
@@ -99,8 +99,13 @@ class Vector3D {
 	friend inline Vector3D operator/(const Vector3D &vector, double divisor);
 	friend inline ostream &operator<<(ostream &out, const Vector3D &v);
 
-	double length() const;
-	double sqlength() const;
+
+	constexpr double length() const {
+		return sqrt(coords[0] * coords[0] + coords[1] * coords[1] + coords[2] * coords[2]);
+	}
+	constexpr double sqlength() const {
+		return coords[0] * coords[0] + coords[1] * coords[1] + coords[2] * coords[2];
+	}
 
 	Vector3D rotated(double, const Vector3D &) const;
 	Vector3D rotated(const Rotation<Vector3D> &) const;
