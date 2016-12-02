@@ -16,8 +16,8 @@ class Vector3D {
 
 	static const int dimension = 3;
 	constexpr Vector3D(double a, double b, double c) : coords{{a, b, c}} {}
-	template <typename T>
-	Vector3D(const T &otherV) : coords{{otherV.x(), otherV.y(), otherV.z()}} {}
+// 	template <typename T>
+// 	Vector3D(const T &otherV) : coords{{otherV.x(), otherV.y(), otherV.z()}} {}
 	inline Vector3D() : coords{{0, 0, 0}} {}
 	inline explicit Vector3D(double a) : coords{{a, a, a}} {}
 	inline explicit Vector3D(std::array<double, 3> c) : coords(c) {}
