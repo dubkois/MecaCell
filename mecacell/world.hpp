@@ -262,7 +262,9 @@ template <typename Cell, typename Integrator = Euler> class World {
     void reset (void) {
         cells.clear();
         newCells.clear();
+        cellPlugin.reset();
         frame = 0;
+        nbAddedCells = 0;
     }
 	
 	/**

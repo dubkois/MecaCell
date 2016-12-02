@@ -34,6 +34,11 @@ template <typename K, typename V> struct ordered_hash_map {
 	const_iterator end() const { return vec.end(); }
 	iterator begin() { return vec.begin(); }
 	iterator end() { return vec.end(); }
+	
+	void clear (void) {
+        um.clear();
+        vec.clear();
+    }
 };
 }
 #endif

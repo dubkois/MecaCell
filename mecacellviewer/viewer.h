@@ -336,7 +336,6 @@ template <typename Scenario> class Viewer : public SignalSlotRenderer {
 		                                              (float)viewportSize.height());
         
 		if (shouldReset) {
-			scenario.getWorld().reset();
 			scenario.reset();
 		}
         

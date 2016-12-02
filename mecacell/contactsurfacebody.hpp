@@ -33,6 +33,10 @@ template <typename Cell> struct ContactSurfaceBodyPlugin {
 	const double gridCellRatio = 4.0;  /// grid size relative to the currentAvgCellSize
 	std::mutex connectionMutex;
 
+    void reset (void) {
+        connections.clear();
+    }
+    
 	/* *******
 	 * HOOKS
 	 * *******/
