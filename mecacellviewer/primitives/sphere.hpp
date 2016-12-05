@@ -81,7 +81,7 @@ public:
 		middlePointCache.clear();
 
 		// init with an icosahedron
-		float t = (1.0 + sqrt(5.0) / 2.0);
+		float t = (1.0 + sqrt(5.0)) / 2.0;
 
 		addVertex(QVector3D(-1, t, 0));
 		addVertex(QVector3D(1, t, 0));
