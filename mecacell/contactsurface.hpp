@@ -73,7 +73,7 @@ template <typename Cell> struct ContactSurface {
 			targets.second.d = midpoint.second / cells.second->getBody().getDynamicRadius();
 		}
 	}
-
+	
 	/*********************************************************
 	 * 				        MAIN UPDATE
 	 ********************************************************/
