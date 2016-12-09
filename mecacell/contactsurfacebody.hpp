@@ -22,7 +22,8 @@ template <typename Cell> class ContactSurfaceBody : public Orientable {
 	double incompressibility = 0.1;
 	double membraneStiffness = 15;
 
-	double restRadius = 40;  /// radiius of the cell when at rest
+    double baseRadius = 40;
+	double restRadius = baseRadius;  /// radiius of the cell when at rest
 	// dynamic target radius:
 	double dynamicRadius = restRadius;
 	double prevDynamicRadius = dynamicRadius;
@@ -146,6 +147,10 @@ template <typename Cell> class ContactSurfaceBody : public Orientable {
 	void setDynamicRadius(double r) { dynamicRadius = r; }
 	double getPressure() const { return pressure; }
 	double getRestRadius(void) const { return restRadius; }
+	
+	inline double getBaseVolume() const {
+		return (4.0 * M_PI / 3.0) * baseRadius * baseRadius * baseRadius;
+    }
 };
 }
 #endif

@@ -14,11 +14,22 @@ namespace MecaCell {
 template <typename Cell> class SpringBody : public Orientable {
 	friend class GenericConnectionBodyPlugin<Cell, SpringConnection>;
 
+	static constexpr double computeVolume (double radius) {
+		return 4. * M_PI * radius * radius * radius / 3.;
+	}
+
 	Cell *cell = nullptr;
 	std::vector<SpringConnection<Cell> *> cellConnections;
-	double restRadius = Config::DEFAULT_CELL_RADIUS;    // radiius of the cell when at rest
+    
+	static constexpr double baseRadius = Config::DEFAULT_CELL_RADIUS;
+	static constexpr double baseVolume = computeVolume(baseRadius);
+    
+	double restRadius = baseRadius;    // radiius of the cell when at rest
+	double restVolume = baseVolume;
+	
 	double stiffness = Config::DEFAULT_CELL_STIFFNESS;  // cell's body stiffness
 
+	
  public:
 	using embedded_plugin_t = GenericConnectionBodyPlugin<Cell, SpringConnection>;
 	SpringBody(Cell *c) : cell(c) {}
@@ -59,7 +70,15 @@ template <typename Cell> class SpringBody : public Orientable {
 	inline double getPreciseMembraneDistance(const Vec &d) const {
 		return get<1>(getConnectedCellAndMembraneDistance(d));
 	}
-	void updateInternals(double) {}
+	void updateInternals(double) {
+		restVolume = computeVolume(restRadius);
+	}
+	
+	
+	double getRestRadius (void) const { return restRadius; }
+	
+	double getBaseVolume (void) const { return baseVolume; } 
+	double getVolume (void) const { return restVolume; }
 };
 }
 #endif
