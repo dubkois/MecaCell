@@ -153,8 +153,7 @@ inline bool operator==(const Vector3D &v1, const Vector3D &v2) {
 	       v1.coords[2] == v2.coords[2];
 }
 inline bool operator!=(const Vector3D &v1, const Vector3D &v2) {
-	return v1.coords[0] != v2.coords[0] && v1.coords[1] != v2.coords[1] &&
-	       v1.coords[2] != v2.coords[2];
+	return !(v1 == v2);
 }
 
 inline Vector3D operator+(const Vector3D &v1, const Vector3D &v2) {
