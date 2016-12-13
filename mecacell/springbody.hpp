@@ -13,6 +13,7 @@
 namespace MecaCell {
 template <typename Cell> class SpringBody : public Orientable {
 	friend class GenericConnectionBodyPlugin<Cell, SpringConnection>;
+    friend Cell;
 
 	static constexpr double computeVolume (double radius) {
 		return 4. * M_PI * radius * radius * radius / 3.;
@@ -39,6 +40,8 @@ template <typename Cell> class SpringBody : public Orientable {
 	double getMomentOfInertia() const {
 		return 0.4 * cell->getMass() * restRadius * restRadius;
 	}
+	void setStiffness (double s) {     stiffness = s; }
+	
 	template <typename Integrator = Euler> void updatePositionsAndOrientations(double dt) {
 		Integrator::updatePosition(*cell, dt);
 		Integrator::updateOrientation(*this, dt);
