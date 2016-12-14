@@ -37,29 +37,6 @@ template <typename Scenario> class Viewer : public SignalSlotRenderer {
     using hook_s = void(R *);
     using ButtonType = Button<R>;
 
-    template<typename T>
-    struct function_traits;
-
-    template<typename R, typename ...Args>
-    struct function_traits<R(*) (Args...)>
-    {
-        static const size_t nargs = sizeof...(Args);
-
-        typedef R result_type;
-        typedef std::tuple<Args...> args_type;
-
-        template <size_t i>
-        struct arg
-        {
-            typedef typename std::tuple_element<i, std::tuple<Args...>>::type type;
-        };
-    };
-
-    static void toto (int argc, char **argv){}
-
-    using TOTO = decltype(&toto);
-    using InitData = typename function_traits<TOTO>::args_type;
-
     DECLARE_HOOK(preLoad, preLoop, preDraw, postDraw, onLoad)
 
     /**
@@ -70,9 +47,14 @@ template <typename Scenario> class Viewer : public SignalSlotRenderer {
      */
     void registerHook(const Hooks &h, hook_t f) { hooks[h].push_back(f); }
 
-    template <typename ... ARGS>
-    Viewer(ARGS ... scInitData) : scenario(scInitData...), scenarioInitData(std::make_tuple(scInitData...)) {
 
+    void setScenarioResetLambda (std::function<void(Scenario &sc)> f) {
+        scenarioResetLambda = f;
+    }
+
+    std::function<void(Scenario &sc)> scenarioResetLambda;
+
+    Viewer(Scenario &sc) : scenario(sc) {
 #if __APPLE__
 #include "TargetConditionals.h"
 #if TARGET_OS_MAC
@@ -93,7 +75,7 @@ template <typename Scenario> class Viewer : public SignalSlotRenderer {
     KeyboardManager km;
     MouseManager mm;
 
-    Scenario scenario;
+    Scenario &scenario;
 
     int frame = 0;
     int nbLoopsPerFrame = 1;
@@ -136,8 +118,6 @@ template <typename Scenario> class Viewer : public SignalSlotRenderer {
 
     QSize viewSize{800, 600};
     QPoint viewPos{0, 0};
-
-    const std::tuple<InitData> scenarioInitData;
 
  private:
     std::map<Qt::Key, hook_t> keyDownMethods;
@@ -280,8 +260,9 @@ template <typename Scenario> class Viewer : public SignalSlotRenderer {
 
         if (b->shouldReset) {
             b->shouldReset = false;
-//            scenario.reset();
-            qDebug() << static_cast<size_t>(-1.);
+            if (scenarioResetLambda)
+                    scenarioResetLambda(scenario);
+            else    qDebug() << "Sorry this button does not do a thing. See function setScenarioResetLambda() if you want to change that";
         }
 
         guiCtrl = b->getGuiCtrl();
@@ -787,6 +768,9 @@ template <typename Scenario> class Viewer : public SignalSlotRenderer {
         view->show();
         for (auto &f : hooks[Hooks::preLoad]) f(this);
         QObject::connect(view, SIGNAL(closing(QQuickCloseEvent *)), &app, SLOT(quit()));
+
+        if (scenarioResetLambda)
+            scenarioResetLambda(scenario);
 
         return app.exec();
     }
