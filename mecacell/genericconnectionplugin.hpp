@@ -144,11 +144,11 @@ struct GenericConnectionBodyPlugin {
 			c.second->update(w.getDt());
 		}
 		for (auto &con : connections) {
-			if (!con.second->fixedAdhesion && con.second->area <= 0)
+			if (!con.second->fixedAdhesion && con.second->disconnect())
 				toDisconnect.push_back(std::make_pair(con.first, con.second.get()));
-			else if (con.first.first->getBody().getConnectedCell(con.second->direction) !=
+			else if (con.first.first->getBody().getConnectedCell(con.second->getDirection()) !=
 			             con.first.second ||
-			         con.first.second->getBody().getConnectedCell(-con.second->direction) !=
+			         con.first.second->getBody().getConnectedCell(-con.second->getDirection()) !=
 			             con.first.first)
 				toDisconnect.push_back(std::make_pair(con.first, con.second.get()));
 		}
