@@ -83,6 +83,12 @@ class Vector3D {
 		return *this;
 	}
 
+	inline explicit operator bool(void) const {
+		return std::isfinite(coords[0])
+			&& std::isfinite(coords[1])
+			&& std::isfinite(coords[2]);
+	}
+	
 	friend inline bool operator==(const Vector3D &v1, const Vector3D &v2);
 	friend inline bool operator!=(const Vector3D &v1, const Vector3D &v2);
 	friend inline Vector3D operator+(const Vector3D &v1, const Vector3D &v2);
@@ -98,6 +104,7 @@ class Vector3D {
 	friend inline Vector3D operator/(const Vector3D &vector, double divisor);
 	friend inline ostream &operator<<(ostream &out, const Vector3D &v);
 
+	
 	double length() const;
 	double sqlength() const;
 
