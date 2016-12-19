@@ -7,7 +7,7 @@
 
 namespace MecacellViewer {
 class BlurQuad {
-	unique_ptr<QOpenGLFramebufferObject> fboA, fboB;
+	std::unique_ptr<QOpenGLFramebufferObject> fboA, fboB;
 	QOpenGLFramebufferObjectFormat format;
 	QOpenGLShaderProgram shader;
 	Quad quad;
@@ -17,8 +17,8 @@ class BlurQuad {
 	BlurQuad(){};
 
 	void load(const QString &vs, const QString &fs, const QSize &s) {
-		fboA = unique_ptr<QOpenGLFramebufferObject>(new QOpenGLFramebufferObject(s, format));
-		fboB = unique_ptr<QOpenGLFramebufferObject>(new QOpenGLFramebufferObject(s, format));
+		fboA = std::unique_ptr<QOpenGLFramebufferObject>(new QOpenGLFramebufferObject(s, format));
+		fboB = std::unique_ptr<QOpenGLFramebufferObject>(new QOpenGLFramebufferObject(s, format));
 		render.load(":/shaders/dumb.vert", ":/shaders/dumb.frag");
 		shader.addShaderFromSourceCode(QOpenGLShader::Vertex, shaderWithHeader(vs));
 		shader.addShaderFromSourceCode(QOpenGLShader::Fragment, shaderWithHeader(fs));
@@ -29,9 +29,9 @@ class BlurQuad {
 	void draw(GLuint tex, int amount, const QSize &s, const QRect &r) {
 		if (fboA->size() != s || fboB->size() != s) {
 			fboA =
-			    unique_ptr<QOpenGLFramebufferObject>(new QOpenGLFramebufferObject(s, format));
+			    std::unique_ptr<QOpenGLFramebufferObject>(new QOpenGLFramebufferObject(s, format));
 			fboB =
-			    unique_ptr<QOpenGLFramebufferObject>(new QOpenGLFramebufferObject(s, format));
+			    std::unique_ptr<QOpenGLFramebufferObject>(new QOpenGLFramebufferObject(s, format));
 		}
 
 		fboA->bind();

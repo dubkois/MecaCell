@@ -247,6 +247,14 @@ template <typename Cell> struct SpringConnection {
 			}
 		}
 	}
+	
+	bool disconnect (void) const {
+        return area <= 0;
+    }
+    
+    const Vec& getDirection (void) const {
+        return direction;
+    }
 };
 }
 #endif

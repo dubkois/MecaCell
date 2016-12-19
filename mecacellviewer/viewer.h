@@ -8,8 +8,12 @@
 #include <QQmlContext>
 #include <QSize>
 #include <QSurfaceFormat>
+
 #include <functional>
+#include <chrono>
+
 #include <mecacell/utilities/hooktools.hpp>
+
 #include "camera.hpp"
 #include "managers/blur.hpp"
 #include "managers/msaa.hpp"
@@ -24,6 +28,7 @@
 #include "signalslotbase.h"
 #include "utilities/keyboardmanager.hpp"
 #include "utilities/mousemanager.hpp"
+
 namespace MecacellViewer {
 template <typename Scenario> class Viewer : public SignalSlotRenderer {
     friend class SignalSlotBase;
@@ -38,6 +43,15 @@ template <typename Scenario> class Viewer : public SignalSlotRenderer {
     using ButtonType = Button<R>;
 
     DECLARE_HOOK(preLoad, preLoop, preDraw, postDraw, onLoad)
+    
+    const std::map<QString, int> defaultPaintStepPriorities {
+        {           "Mesh type", 10      },
+        { "Display connections", 17      },
+        {                "SSAO", 1000000 },
+        {                "MSAA", 0       },
+        {              "Skybox", 5       },
+        {                "Blur", 2000000 }
+    };
 
     /**
      * @brief register a single hook method. cf registerPlugins()
@@ -175,28 +189,30 @@ template <typename Scenario> class Viewer : public SignalSlotRenderer {
         screenManagers.push_back(dynamic_cast<ScreenManager<R> *>(paintSteps["Blur"].get()));
 
         cellsMenu.onToggled = [&](R *r, MenuElement<R> *me) {
+            int priority = defaultPaintStepPriorities.at("Mesh type");
             if (me->isChecked()) {
                 if (me->at("Mesh type").at("Sphere").isChecked()) {
-                    paintStepsMethods[10] = [&](R *r) {
+                    paintStepsMethods[priority] = [&](R *r) {
                         CellGroup<R> *cells =
                             dynamic_cast<CellGroup<R> *>(paintSteps["SphereCells"].get());
                         cells->call(r, false);
                     };
                 } else if (me->at("Mesh type").at("Centers only").isChecked()) {
-                    paintStepsMethods[10] = [&](R *r) {
+                    paintStepsMethods[priority] = [&](R *r) {
                         CellGroup<R> *cells =
                             dynamic_cast<CellGroup<R> *>(paintSteps["SphereCells"].get());
                         cells->call(r, true);
                     };
                 } else
-                    paintStepsMethods.erase(10);
+                    paintStepsMethods.erase(priority);
             } else
-                paintStepsMethods.erase(10);
+                paintStepsMethods.erase(priority);
         };
 
         cellsMenu.at("Display connections").onToggled = [&](R *r, MenuElement<R> *me) {
+            int priority = defaultPaintStepPriorities.at("Display connections");
             if (me->isChecked()) {
-                paintStepsMethods[17] = [&](R *r) {
+                paintStepsMethods[priority] = [&](R *r) {
                     ConnectionsGroup<R> *connections =
                         dynamic_cast<ConnectionsGroup<R> *>(paintSteps["Connections"].get());
                     connections->template draw<Cell>(
@@ -204,14 +220,15 @@ template <typename Scenario> class Viewer : public SignalSlotRenderer {
                         r->getProjectionMatrix());
                 };
             } else
-                paintStepsMethods.erase(17);
+                paintStepsMethods.erase(priority);
         };
         MenuElement<R> ssaoPostproc = {"SSAO"};
         ssaoPostproc.onToggled = [&](R *r, MenuElement<R> *me) {
+            int priority = defaultPaintStepPriorities.at("SSAO");
             if (me->isChecked()) {
-                paintStepsMethods[1000000] = [&](R *r) { paintSteps["SSAO"]->call(r); };
+                paintStepsMethods[priority] = [&](R *r) { paintSteps["SSAO"]->call(r); };
             } else {
-                paintStepsMethods[1000000] = [&](R *r) {
+                paintStepsMethods[priority] = [&](R *r) {
                     dynamic_cast<SSAO<R> *>(paintSteps["SSAO"].get())->callDumb(r);
                 };
             }
@@ -221,9 +238,9 @@ template <typename Scenario> class Viewer : public SignalSlotRenderer {
         displayMenu = {"Enabled elements", {cellsMenu, postProcMenu}};
 
         // non disablable elements
-        paintStepsMethods[0] = [&](R *r) { paintSteps["MSAA"]->call(r); };
-        paintStepsMethods[5] = [&](R *r) { paintSteps["Skybox"]->call(r); };
-        paintStepsMethods[2000000] = [&](R *r) { paintSteps["Blur"]->call(r); };
+        paintStepsMethods[defaultPaintStepPriorities.at("MSAA")] = [&](R *r) { paintSteps["MSAA"]->call(r); };
+        paintStepsMethods[defaultPaintStepPriorities.at("Skybox")] = [&](R *r) { paintSteps["Skybox"]->call(r); };
+        paintStepsMethods[defaultPaintStepPriorities.at("Blur")] = [&](R *r) { paintSteps["Blur"]->call(r); };
 
         for (auto &f : hooks[Hooks::onLoad]) f(this);
         displayMenu.callAll(this);

@@ -1,7 +1,12 @@
 #ifndef MENUELEMENT_HPP
 #define MENUELEMENT_HPP
+
+#include <QVariant>
 #include <QString>
 #include <cassert>
+
+#include <vector>
+#include <utility>
 
 enum class elementType { group, checkable, exclusiveGroup };
 template <typename R> struct MenuElement {
@@ -9,7 +14,7 @@ template <typename R> struct MenuElement {
 	elementType type = elementType::checkable;
 	bool currentChecked = true;
 	bool previousChecked = true;
-	vector<MenuElement> elems;
+	std::vector<MenuElement> elems;
 	std::function<void(R*, MenuElement*)> onToggled;
 	void add(const MenuElement& e) { elems.push_back(e); }
 	int count(const QString& n) {
@@ -78,7 +83,7 @@ template <typename R> struct MenuElement {
 	void restoreChildrenChecked() {
 		for (auto& e : elems) e.restoreMeAndMyChildrens();
 	}
-	void updateCheckedFromList(R* r, const vector<pair<QList<QVariant>, bool>>& v) {
+	void updateCheckedFromList(R*, const std::vector<std::pair<QList<QVariant>, bool>>& v) {
 		for (auto& var : v) {
 			MenuElement<R>* nxt = this;
 			for (auto& e : var.first) {
