@@ -1,6 +1,10 @@
 #ifndef PAINTSTEP_HPP
 #define PAINTSTEP_HPP
+
+#include <functional>
+
 #include <QString>
+
 template <typename RendererType> struct PaintStep {
 	QString name = "generic name";
 	QString category = "Visual elements";
