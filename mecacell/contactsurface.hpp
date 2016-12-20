@@ -282,6 +282,14 @@ template <typename Cell> struct ContactSurface {
 		//(targetsBw.second.X * computedTargetsDistances.second).cross(F));
 		//}
 	}
+	
+	bool disconnect (void) const {
+        return area <= 0;
+    }
+	
+	Vec getDirection (void) const {
+        return direction;
+    }
 };
 }
 #endif
