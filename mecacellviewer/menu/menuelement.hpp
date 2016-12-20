@@ -1,12 +1,15 @@
 #ifndef MENUELEMENT_HPP
 #define MENUELEMENT_HPP
 
-#include <QVariant>
-#include <QString>
 #include <cassert>
-
-#include <vector>
+#include <functional>
+#include <iostream>
 #include <utility>
+#include <vector>
+
+#include <QDebug>
+#include <QString>
+#include <QVariant>
 
 enum class elementType { group, checkable, exclusiveGroup };
 template <typename R> struct MenuElement {
@@ -120,7 +123,7 @@ template <typename R> struct MenuElement {
 		std::cerr << typeToSymbol(type == elementType::exclusiveGroup ? elementType::group :
 		                                                                currentType)
 		                 .toStdString()
-		          << " " << name.toStdString() << endl;
+		          << " " << name.toStdString() << std::endl;
 		for (auto& e : elems) {
 			if (type == elementType::exclusiveGroup) {
 				e.print(padding + 2, elementType::exclusiveGroup);

@@ -1,6 +1,7 @@
 #ifndef MECACELLVIEWER_H
 #define MECACELLVIEWER_H
 #include <QGuiApplication>
+#include <QIcon>
 #include <QMatrix4x4>
 #include <QOpenGLFramebufferObject>
 #include <QPointF>
@@ -132,6 +133,8 @@ template <typename Scenario> class Viewer : public SignalSlotRenderer {
 
     QSize viewSize{800, 600};
     QPoint viewPos{0, 0};
+    QString viewIcon = ":/images/logo_square.png";
+    QString viewName = "Mecacell Viewer";
 
  private:
     std::map<Qt::Key, hook_t> keyDownMethods;
@@ -454,6 +457,20 @@ template <typename Scenario> class Viewer : public SignalSlotRenderer {
      */
     void setWindowPosition(QPoint p) { viewPos = p; }
 
+    /**
+     * @brief Sets the main window's title
+     * 
+     * @param t the title
+     */
+    void setWindowTitle(QString t) { viewName = t; }
+    
+    /**
+     * @brief Sets the main window's icon path
+     * 
+     * @param p path to the icon
+     */
+    void setWindowIconPath(QString p) { viewIcon = p; }
+    
     /**
      * @brief pauses calls to the scenario loop
      */
@@ -780,8 +797,13 @@ template <typename Scenario> class Viewer : public SignalSlotRenderer {
 
         engine->rootContext()->setContextProperty("glview", ssb);
         ssb->init(this);
+        
+        // Set user preferences
         view->setPosition(viewPos);
         if (!viewSize.isNull()) view->resize(viewSize);
+        view->setIcon(QIcon(viewIcon));
+        view->setTitle(viewName);
+        
         view->show();
         for (auto &f : hooks[Hooks::preLoad]) f(this);
         QObject::connect(view, SIGNAL(closing(QQuickCloseEvent *)), &app, SLOT(quit()));

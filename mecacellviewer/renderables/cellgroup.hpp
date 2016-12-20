@@ -1,5 +1,7 @@
 #ifndef CELLGROUP_HPP
 #define CELLGROUP_HPP
+
+#include "../paintstep.hpp"
 #include "../primitives/sphere.hpp"
 #include "../utilities/viewtools.h"
 
