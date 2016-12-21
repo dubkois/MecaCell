@@ -57,77 +57,77 @@ const constexpr static char BOLDWHITE[] = "";
 #endif
 
 template <typename T> std::string sublogger(T&& t) {
-	std::ostringstream os;
-	os << t;
-	return os.str();
+    std::ostringstream os;
+    os << t;
+    return os.str();
 }
 
 template <typename T, typename... Args> std::string sublogger(T&& t, Args&&... args) {
-	std::ostringstream os;
-	os << t << sublogger(std::forward<Args>(args)...);
-	return os.str();
+    std::ostringstream os;
+    os << t << sublogger(std::forward<Args>(args)...);
+    return os.str();
 }
 
 struct WARN {
 #ifndef MECACELL_LOGGER_WARN_DISABLE
-	static constexpr const bool enabled = true;
+    static constexpr const bool enabled = true;
 #else
-	static constexpr const bool enabled = false;
+    static constexpr const bool enabled = false;
 #endif
-	static constexpr const auto color = YELLOW;
-	static constexpr const auto tag = "⚠ ";
+    static constexpr const auto color = YELLOW;
+    static constexpr const auto tag = "⚠ ";
 };
 struct ERR {
 #ifndef MECACELL_LOGGER_ERR_DISABLE
-	static constexpr const bool enabled = true;
+    static constexpr const bool enabled = true;
 #else
-	static constexpr const bool enabled = false;
+    static constexpr const bool enabled = false;
 #endif
-	static constexpr const auto color = RED;
-	static constexpr const auto tag = " ✖ ";
+    static constexpr const auto color = RED;
+    static constexpr const auto tag = " ✖ ";
 };
 struct INF {
 #ifndef MECACELL_LOGGER_INF_DISABLE
-	static constexpr const bool enabled = true;
+    static constexpr const bool enabled = true;
 #else
-	static constexpr const bool enabled = false;
+    static constexpr const bool enabled = false;
 #endif
-	static constexpr const auto color = BLUE;
-	static constexpr const auto tag = "⟢ ";
+    static constexpr const auto color = BLUE;
+    static constexpr const auto tag = "⟢ ";
 };
 struct DBG {
 #ifndef MECACELL_LOGGER_DBG_DISABLE
-	static constexpr const bool enabled = true;
+    static constexpr const bool enabled = true;
 #else
-	static constexpr const bool enabled = false;
+    static constexpr const bool enabled = false;
 #endif
-	static constexpr const auto color = MAGENTA;
-	static constexpr const auto tag = "☵ ";
+    static constexpr const auto color = MAGENTA;
+    static constexpr const auto tag = "☵ ";
 };
 struct SUC {
 #ifndef MECACELL_LOGGER_SUC_DISABLE
-	static constexpr const bool enabled = true;
+    static constexpr const bool enabled = true;
 #else
-	static constexpr const bool enabled = false;
+    static constexpr const bool enabled = false;
 #endif
-	static constexpr const auto color = BOLDGREEN;
-	static constexpr const auto tag = " ✓ ";
+    static constexpr const auto color = BOLDGREEN;
+    static constexpr const auto tag = " ✓ ";
 };
 
 template <typename Type, typename... Args> void logger(Args&&... args) {
-	if (Type::enabled) {
-		time_t rawtime;
-		time(&rawtime);
-		struct tm* timeinfo = localtime(&rawtime);
-		char buffer[80];
-		strftime(buffer, 80, "\%F %H:%M:\%S", timeinfo);
+    if (Type::enabled) {
+        time_t rawtime;
+        time(&rawtime);
+        struct tm* timeinfo = localtime(&rawtime);
+        char buffer[80];
+        strftime(buffer, 80, "%F %H:%M:%S", timeinfo);
 
-		std::ostringstream os;
-		os << BOLDBLACK << "[" << buffer << "]" << RESET << Type::color << " " << Type::tag
-		   << BOLDBLACK << " : " << RESET;
-		os << sublogger(std::forward<Args>(args)...) << std::endl;
-		std::cerr << os.str();
-	}
+        std::ostringstream os;
+        os << BOLDBLACK << "[" << buffer << "]" << RESET << Type::color << " " << Type::tag
+           << BOLDBLACK << " : " << RESET;
+        os << sublogger(std::forward<Args>(args)...) << std::endl;
+        std::cerr << os.str();
+    }
 }
 }
 #endif

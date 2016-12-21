@@ -44,7 +44,7 @@ template <typename S> class Viewer : public SignalSlotRenderer {
     using ButtonType = Button<R>;
 
     DECLARE_HOOK(preLoad, preLoop, preDraw, postDraw, onLoad)
-    
+
     const std::map<QString, int> defaultPaintStepPriorities {
         {           "Mesh type", 10      },
         { "Display connections", 17      },
@@ -136,6 +136,10 @@ template <typename S> class Viewer : public SignalSlotRenderer {
     QString viewIcon = ":/images/logo_square.png";
     QString viewName = "Mecacell Viewer";
 
+
+    CellRenderer_t
+
+
  private:
     std::map<Qt::Key, hook_t> keyDownMethods;
     std::map<Qt::Key, hook_t> keyUpMethods;
@@ -161,8 +165,8 @@ template <typename S> class Viewer : public SignalSlotRenderer {
 
     // init function for the renderer. Create all the defaults paint steps and
     // screen managers, initializes scenario and users additions.
-    using psptr = std::unique_ptr<PaintStep<R>>;
     virtual void initialize(QQuickWindow *wdw) {
+        using psptr = std::unique_ptr<PaintStep<R>>;
         MenuElement<R> cellsMenu = {
             "Cells",
             {
@@ -191,7 +195,7 @@ template <typename S> class Viewer : public SignalSlotRenderer {
         screenManagers.push_back(dynamic_cast<ScreenManager<R> *>(paintSteps["SSAO"].get()));
         screenManagers.push_back(dynamic_cast<ScreenManager<R> *>(paintSteps["Blur"].get()));
 
-        cellsMenu.onToggled = [&](R *r, MenuElement<R> *me) {
+        cellsMenu.onToggled = [&](R*, MenuElement<R> *me) {
             int priority = defaultPaintStepPriorities.at("Mesh type");
             if (me->isChecked()) {
                 if (me->at("Mesh type").at("Sphere").isChecked()) {
@@ -212,7 +216,7 @@ template <typename S> class Viewer : public SignalSlotRenderer {
                 paintStepsMethods.erase(priority);
         };
 
-        cellsMenu.at("Display connections").onToggled = [&](R *r, MenuElement<R> *me) {
+        cellsMenu.at("Display connections").onToggled = [&](R*, MenuElement<R> *me) {
             int priority = defaultPaintStepPriorities.at("Display connections");
             if (me->isChecked()) {
                 paintStepsMethods[priority] = [&](R *r) {
@@ -226,7 +230,7 @@ template <typename S> class Viewer : public SignalSlotRenderer {
                 paintStepsMethods.erase(priority);
         };
         MenuElement<R> ssaoPostproc = {"SSAO"};
-        ssaoPostproc.onToggled = [&](R *r, MenuElement<R> *me) {
+        ssaoPostproc.onToggled = [&](R*, MenuElement<R> *me) {
             int priority = defaultPaintStepPriorities.at("SSAO");
             if (me->isChecked()) {
                 paintStepsMethods[priority] = [&](R *r) { paintSteps["SSAO"]->call(r); };
@@ -459,18 +463,18 @@ template <typename S> class Viewer : public SignalSlotRenderer {
 
     /**
      * @brief Sets the main window's title
-     * 
+     *
      * @param t the title
      */
     void setWindowTitle(QString t) { viewName = t; }
-    
+
     /**
      * @brief Sets the main window's icon path
-     * 
+     *
      * @param p path to the icon
      */
     void setWindowIconPath(QString p) { viewIcon = p; }
-    
+
     /**
      * @brief pauses calls to the scenario loop
      */
@@ -797,13 +801,13 @@ template <typename S> class Viewer : public SignalSlotRenderer {
 
         engine->rootContext()->setContextProperty("glview", ssb);
         ssb->init(this);
-        
+
         // Set user preferences
         view->setPosition(viewPos);
         if (!viewSize.isNull()) view->resize(viewSize);
         view->setIcon(QIcon(viewIcon));
         view->setTitle(viewName);
-        
+
         view->show();
         for (auto &f : hooks[Hooks::preLoad]) f(this);
         QObject::connect(view, SIGNAL(closing(QQuickCloseEvent *)), &app, SLOT(quit()));
