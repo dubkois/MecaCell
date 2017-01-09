@@ -1,6 +1,7 @@
 #ifndef SPRINGBODY_HPP
 #define SPRINGBODY_HPP
 #include "genericconnectionplugin.hpp"
+#include "geometry/particle.hpp"
 #include "integrators.hpp"
 #include "orientable.h"
 #include "spring.hpp"
@@ -11,9 +12,9 @@
 #include "utilities/utils.h"
 
 namespace MecaCell {
-template <typename Cell> class SpringBody : public Orientable {
+template <typename Cell> class SpringBody : public OrientedParticle {
 	friend class GenericConnectionBodyPlugin<Cell, SpringConnection>;
-    friend Cell;
+    	friend Cell;
 
 	static constexpr double computeVolume (double radius) {
 		return 4. * M_PI * radius * radius * radius / 3.;
@@ -33,7 +34,7 @@ template <typename Cell> class SpringBody : public Orientable {
 	
  public:
 	using embedded_plugin_t = GenericConnectionBodyPlugin<Cell, SpringConnection>;
-	SpringBody(Cell *c) : cell(c) {}
+	SpringBody(Cell *c, Vector3D pos = Vector3D::zero()) : OrientedParticle(pos), cell(c) {}
 	void setRestRadius(double r) { restRadius = r; }
 	double getBoundingBoxRadius() const { return restRadius; };
 	double getStiffness() const { return stiffness; }
@@ -43,8 +44,8 @@ template <typename Cell> class SpringBody : public Orientable {
 	void setStiffness (double s) {     stiffness = s; }
 	
 	template <typename Integrator = Euler> void updatePositionsAndOrientations(double dt) {
-		Integrator::updatePosition(*cell, dt);
-		Integrator::updateOrientation(*this, dt);
+		Integrator::updatePosition(*this, dt);
+		Integrator::updateOrientation(*this, getMomentOfInertia(), dt);
 	}
 
 	std::tuple<Cell *, double> getConnectedCellAndMembraneDistance(const Vec &d) const {
@@ -66,13 +67,16 @@ template <typename Cell> class SpringBody : public Orientable {
 		}
 		return std::make_tuple(closestCell, closestDist);
 	}
+
 	inline Cell *getConnectedCell(const Vec &d) const {
 		return get<0>(getConnectedCellAndMembraneDistance(d));
 	}
+
 	// required by GenericConnection Plugin
 	inline double getPreciseMembraneDistance(const Vec &d) const {
 		return get<1>(getConnectedCellAndMembraneDistance(d));
 	}
+
 	void updateInternals(double) {
 		restVolume = computeVolume(restRadius);
 	}
