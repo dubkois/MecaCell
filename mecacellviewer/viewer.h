@@ -31,10 +31,11 @@
 #include "utilities/mousemanager.hpp"
 
 namespace MecacellViewer {
-template <typename Scenario> class Viewer : public SignalSlotRenderer {
+template <typename S> class Viewer : public SignalSlotRenderer {
 	friend class SignalSlotBase;
 
- public:
+public:
+    using Scenario = S;
 	using World =
 	    typename remove_reference<decltype(((Scenario *)nullptr)->getWorld())>::type;
 	using Cell = typename World::cell_t;

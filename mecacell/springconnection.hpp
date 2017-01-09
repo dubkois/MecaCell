@@ -51,7 +51,7 @@ template <typename Cell> struct SpringConnection {
 	Vector3D direction;            // normalized direction from cell 0 to cell 1
 	double dist;                   // distance btwn the two cells
 	std::pair<Joint, Joint> flex, tors;
-	bool adhesionEnabled = true, frictionEnabled = true, flexEnabled = false,
+	bool adhesionEnabled = true, frictionEnabled = true, flexEnabled = true,
 	     torsEnabled = false, fixedAdhesion = false;
 
 	SpringConnection(){};
@@ -184,6 +184,8 @@ template <typename Cell> struct SpringConnection {
 		const auto &cell = cells.template get<n>();
 		const auto &other = cells.template get < n == 0 ? 1 : 0 > ();
 		const double sign = n == 0 ? 1 : -1;
+        
+        
 		if (flexNode.targetUpdateEnabled) flexNode.target = direction * sign;
 		flexNode.updateDelta();
 		if (flexNode.maxTetaAutoCorrect &&

@@ -36,10 +36,10 @@ template <typename Cell> class SpringBody : public OrientedParticle {
 	using embedded_plugin_t = GenericConnectionBodyPlugin<Cell, SpringConnection>;
 	SpringBody(Cell *c, Vector3D pos = Vector3D::zero()) : OrientedParticle(pos), cell(c) {}
 	void setRestRadius(double r) { restRadius = r; }
-	double getBoundingBoxRadius() const { return restRadius; };
+	double getBoundingBoxRadius() const { return restRadius; }
 	double getStiffness() const { return stiffness; }
 	double getMomentOfInertia() const {
-		return 0.4 * cell->getMass() * restRadius * restRadius;
+		return 0.4 * getMass() * restRadius * restRadius;
 	}
 	void setStiffness (double s) {     stiffness = s; }
 	
@@ -86,6 +86,8 @@ template <typename Cell> class SpringBody : public OrientedParticle {
 	
 	double getBaseVolume (void) const { return baseVolume; } 
 	double getVolume (void) const { return restVolume; }
+	
+	void moveTo(Vector3D newpos) { this->setPosition(newpos); }
 };
 }
 #endif
