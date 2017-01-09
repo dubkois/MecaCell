@@ -78,6 +78,7 @@ template <typename Cell> struct SpringConnection {
 		else
 			return {smallestCellMidpoint, biggestCellMidpoint};
 	}
+
 	void updateDirection() {
 		direction =
 		    cells.second->getBody().getPosition() - cells.first->getBody().getPosition();
@@ -128,7 +129,7 @@ template <typename Cell> struct SpringConnection {
 		flex.first.r = cells.first->getBody().getOrientationRotation().inverted() +
 		               Vec::getRotation(Basis<Vec>(), Basis<Vec>(direction, ortho));
 		flex.second.r = cells.second->getBody().getOrientationRotation().inverted() +
-		                Vec::getRotation(Basis<Vec>(), Basis<Vec>(direction, ortho));
+		                Vec::getRotation(Basis<Vec>(), Basis<Vec>(-direction, ortho));
 		tors.first.r = flex.first.r;
 		tors.second.r = flex.second.r;
 
@@ -151,12 +152,16 @@ template <typename Cell> struct SpringConnection {
 	}
 
 	void updateFlexParams() {
+		flex.first.target = direction;
+		flex.first.updateDelta();
+		flex.second.target = -direction;
+		flex.second.updateDelta();
 		flex.first.updateDirection(cells.first->getBody().getOrientation().X,
 		                           cells.first->getBody().getOrientationRotation());
 		flex.second.updateDirection(cells.second->getBody().getOrientation().X,
 		                            cells.second->getBody().getOrientationRotation());
-		flex.first.k = adhesion.k * area;
-		flex.second.k = adhesion.k * area;
+		flex.first.k = adhesion.k * area * ANG_ADH_COEF;
+		flex.second.k = adhesion.k * area * ANG_ADH_COEF;
 		flex.first.c = dampingFromRatio(ADH_DAMPING_RATIO,
 		                                cells.first->getBody().getMomentOfInertia() +
 		                                    cells.second->getBody().getMomentOfInertia(),
@@ -184,10 +189,7 @@ template <typename Cell> struct SpringConnection {
 		const auto &cell = cells.template get<n>();
 		const auto &other = cells.template get < n == 0 ? 1 : 0 > ();
 		const double sign = n == 0 ? 1 : -1;
-        
-        
-		if (flexNode.targetUpdateEnabled) flexNode.target = direction * sign;
-		flexNode.updateDelta();
+
 		if (flexNode.maxTetaAutoCorrect &&
 		    flexNode.delta.teta > flexNode.maxTeta) {  // if we passed flex break angle
 			double dif = flexNode.delta.teta - flexNode.maxTeta;
@@ -198,6 +200,7 @@ template <typename Cell> struct SpringConnection {
 			             Vec::getRotation(Basis<Vec>(), Basis<Vec>(flexNode.direction,
 			                                                       flexNode.direction.ortho()));
 		}
+		flexNode.delta.n.normalize();
 		double torque =
 		    flexNode.k * flexNode.delta.teta +
 		    flexNode.c * ((flexNode.delta.teta - flexNode.prevDelta.teta) / dt);  // -kx - cv
@@ -251,14 +254,6 @@ template <typename Cell> struct SpringConnection {
 			}
 		}
 	}
-	
-	bool disconnect (void) const {
-        return area <= 0;
-    }
-    
-    const Vec& getDirection (void) const {
-        return direction;
-    }
 };
 }
 #endif
