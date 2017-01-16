@@ -27,9 +27,17 @@ struct GenericConnectionBodyPlugin {
 	const double gridCellRatio = 4.0;  /// grid size relative to the currentAvgCellSize
 	std::mutex connectionMutex;
 
+    using params_t = typename GenericConnection<Cell>::params_t;
+    typedef std::function<void(Cell*,Cell*,params_t&)> NewConnectionCallback;
+    NewConnectionCallback onNewConnectionCallback;
+    
+    void setOnNewConnectionCallback (NewConnectionCallback callback) {
+        onNewConnectionCallback = callback;
+    }
+    
 	void reset (void) {
 		connections.clear();
-    	}
+    }
 
 	/* *******
 	 * HOOKS
@@ -59,7 +67,12 @@ struct GenericConnectionBodyPlugin {
 	 * @param cells the cells that are in contact
 	 */
 	void createConnection(const ordered_pair<Cell *> &cells) {
-		connections[cells] = std::make_unique<GenericConnection<Cell>>(cells);
+        if (onNewConnectionCallback) {
+            params_t params;
+            onNewConnectionCallback(cells.first, cells.second, params);
+            connections[cells] = std::make_unique<GenericConnection<Cell>>(cells, params);
+        } else
+            connections[cells] = std::make_unique<GenericConnection<Cell>>(cells);
 		cells.first->connectedCells.insert(cells.second);
 		cells.second->connectedCells.insert(cells.first);
 		auto *newConnection = connections.at(cells).get();
@@ -140,12 +153,15 @@ struct GenericConnectionBodyPlugin {
 			c.second->update(w.getDt());
 		}
 		for (auto &con : connections) {
-			if (!con.second->fixedAdhesion && con.second->area <= 0)
-				toDisconnect.push_back(std::make_pair(con.first, con.second.get()));
-			else if (con.first.first->getBody().getConnectedCell(con.second->direction) !=
-			             con.first.second ||
-			         con.first.second->getBody().getConnectedCell(-con.second->direction) !=
-			             con.first.first)
+            Cell *n0 = con.first.first->getBody().getConnectedCell(con.second->direction);
+            Cell *n1 = con.first.second->getBody().getConnectedCell(-con.second->direction);
+
+            // Connection through cell
+            if (n0 && n1 && (n0 != con.first.second || n1 != con.first.first))
+                toDisconnect.push_back(std::make_pair(con.first, con.second.get()));
+
+            
+            if (!con.second->parameters.fixedAdhesion && !(n0 || n1))
 				toDisconnect.push_back(std::make_pair(con.first, con.second.get()));
 		}
 		for (auto &c : toDisconnect) disconnect(c.first, c.second);

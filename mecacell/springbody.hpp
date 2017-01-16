@@ -13,7 +13,12 @@
 
 namespace MecaCell {
 template <typename Cell> class SpringBody : public OrientedParticle {
-	friend class GenericConnectionBodyPlugin<Cell, SpringConnection>;
+public:
+    using connection_t = SpringConnection<Cell>;
+  	using embedded_plugin_t = GenericConnectionBodyPlugin<Cell, SpringConnection>;
+  
+private:
+	friend embedded_plugin_t;
     	friend Cell;
 
 	static constexpr double computeVolume (double radius) {
@@ -33,8 +38,9 @@ template <typename Cell> class SpringBody : public OrientedParticle {
 
 	
  public:
-	using embedded_plugin_t = GenericConnectionBodyPlugin<Cell, SpringConnection>;
-	SpringBody(Cell *c, Vector3D pos = Vector3D::zero()) : OrientedParticle(pos), cell(c) {}
+	
+    SpringBody(Cell *c, Vector3D pos = Vector3D::zero()) : OrientedParticle(pos), cell(c) {}
+	
 	void setRestRadius(double r) { restRadius = r; }
 	double getBoundingBoxRadius() const { return restRadius; }
 	double getStiffness() const { return stiffness; }

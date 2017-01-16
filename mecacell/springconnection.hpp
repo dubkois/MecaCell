@@ -33,10 +33,10 @@ namespace MecaCell {
  * An implementaiton of these methods is available in the Orientable and Movable classes.
  */
 template <typename Cell> struct SpringConnection {
-	static const constexpr double COLLISION_DAMPING_RATIO = 0.5;
-	static const constexpr double ADH_DAMPING_RATIO = 1.0;
-	static const constexpr double ADH_CONSTANT =
-	    0.03 * Config::DEFAULT_CELL_STIFFNESS;  // factor by which all adhesion forces is
+	static const constexpr double COLLISION_DAMPING_RATIO = 0.2;//0.5;
+	static const constexpr double ADH_DAMPING_RATIO = 0.2;//1.0;
+//     static const constexpr double ANG_ADH_COEF = 10.0;
+// 	static const constexpr double ADH_CONSTANT = 0.01; // factor by which all adhesion forces is
 	                                            // multiplied
 	static const constexpr double MAX_TS_INCL =
 	    0.1;  // max angle before we need to reproject our torsion joint rotation
@@ -51,11 +51,23 @@ template <typename Cell> struct SpringConnection {
 	Vector3D direction;            // normalized direction from cell 0 to cell 1
 	double dist;                   // distance btwn the two cells
 	std::pair<Joint, Joint> flex, tors;
-	bool adhesionEnabled = true, frictionEnabled = true, flexEnabled = true,
-	     torsEnabled = false, fixedAdhesion = false;
+    
+    struct params_t {
+        bool adhesionEnabled = true;
+        bool frictionEnabled = true;
+        bool flexEnabled = true;
+        bool torsEnabled = false;
+        bool fixedAdhesion = false;
+        double adhLinearConstant = 0.01;
+        double adhAngularConstant = 1;
+    };
+    
+    const params_t parameters;
 
-	SpringConnection(){};
-	SpringConnection(ordered_pair<Cell *> c) : cells(c) { init(); };
+	SpringConnection(){}
+	SpringConnection(ordered_pair<Cell *> c) : cells(c) { init(); }
+	SpringConnection(ordered_pair<Cell *> c, const params_t &params)
+        : cells(c), parameters(params) { init(); }
 
 	std::pair<double, double> computeMidpoints(double distanceBtwnCenters) {
 		// return the current contact disk's center distance to each cells centers
@@ -89,14 +101,17 @@ template <typename Cell> struct SpringConnection {
 	void updateCollisionParams() {
 		collision.restLength =
 		    cells.first->getBoundingBoxRadius() + cells.second->getBoundingBoxRadius();
-		collision.k =
+
+        collision.k =
 		    (cells.first->getBoundingBoxRadius() * cells.first->getBody().getStiffness() +
 		     cells.second->getBoundingBoxRadius() * cells.second->getBody().getStiffness()) /
 		    collision.restLength;
+            
 		collision.c = dampingFromRatio(
 		    COLLISION_DAMPING_RATIO,
 		    cells.first->getBody().getMass() + cells.second->getBody().getMass(),
 		    collision.k);
+        
 		midpoint = computeMidpoints(dist);
 		sqradius = max(0.0, std::pow(cells.first->getBody().getBoundingBoxRadius(), 2) -
 		                        midpoint.first * midpoint.first);
@@ -113,10 +128,11 @@ template <typename Cell> struct SpringConnection {
 		        cells.first,
 		        (-direction)
 		            .rotated(cells.second->getBody().getOrientationRotation().inverted())));
+        
 		adhesion.k =
 		    max(cells.first->getBoundingBoxRadius(), cells.second->getBoundingBoxRadius())
-
-		    * ADH_CONSTANT * adhCoef;
+            * collision.k * parameters.adhLinearConstant * adhCoef;
+            
 		adhesion.c = dampingFromRatio(
 		    ADH_DAMPING_RATIO,
 		    cells.first->getBody().getMass() + cells.second->getBody().getMass(), adhesion.k);
@@ -160,8 +176,8 @@ template <typename Cell> struct SpringConnection {
 		                           cells.first->getBody().getOrientationRotation());
 		flex.second.updateDirection(cells.second->getBody().getOrientation().X,
 		                            cells.second->getBody().getOrientationRotation());
-		flex.first.k = adhesion.k * area * ANG_ADH_COEF;
-		flex.second.k = adhesion.k * area * ANG_ADH_COEF;
+		flex.first.k = adhesion.k * area * parameters.adhAngularConstant;
+		flex.second.k = adhesion.k * area * parameters.adhAngularConstant;
 		flex.first.c = dampingFromRatio(ADH_DAMPING_RATIO,
 		                                cells.first->getBody().getMomentOfInertia() +
 		                                    cells.second->getBody().getMomentOfInertia(),
@@ -174,7 +190,7 @@ template <typename Cell> struct SpringConnection {
 		collision.prevLength = dist;
 		collision.length = dist;
 		updateCollisionParams();
-		if (adhesionEnabled) {
+		if (parameters.adhesionEnabled) {
 			adhesion.length = dist;
 			adhesion.prevLength = dist;
 			adhesion.restLength = 0;
@@ -213,7 +229,7 @@ template <typename Cell> struct SpringConnection {
 
 		cell->getBody().receiveTorque(vFlex);
 		flexNode.prevDelta = flexNode.delta;
-		if (torsEnabled) {
+		if (parameters.torsEnabled) {
 			// updating torsion joint (needs to stay perp to direction)
 			double scalar = torsNode.direction.dot(direction);
 			// if the angle between our torsion spring and direction is too far from 90°,
@@ -242,13 +258,13 @@ template <typename Cell> struct SpringConnection {
 		collision.updateLength(dist);
 		updateCollisionParams();
 		collision.applyForce(cells.first->getBody(), cells.second->getBody(), direction, dt);
-		if (adhesionEnabled) {
+		if (parameters.adhesionEnabled) {
 			adhesion.updateLength(dist);
 			updateAdhesionParams();
 			adhesion.applyForce(cells.first->getBody(), cells.second->getBody(), direction, dt);
-			if (flexEnabled) updateFlexParams();
-			if (torsEnabled) updateTorsParams();
-			if (flexEnabled || torsEnabled) {
+			if (parameters.flexEnabled) updateFlexParams();
+			if (parameters.torsEnabled) updateTorsParams();
+			if (parameters.flexEnabled || parameters.torsEnabled) {
 				updateJointsForces<0>(dt);
 				updateJointsForces<1>(dt);
 			}
