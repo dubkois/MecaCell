@@ -33,8 +33,8 @@ namespace MecaCell {
  * An implementaiton of these methods is available in the Orientable and Movable classes.
  */
 template <typename Cell> struct SpringConnection {
-	static const constexpr double COLLISION_DAMPING_RATIO = 0.2;//0.5;
-	static const constexpr double ADH_DAMPING_RATIO = 0.2;//1.0;
+// 	static const constexpr double COLLISION_DAMPING_RATIO = 0.2;//0.5;
+// 	static const constexpr double ADH_DAMPING_RATIO = 0.2;//1.0;
 //     static const constexpr double ANG_ADH_COEF = 10.0;
 // 	static const constexpr double ADH_CONSTANT = 0.01; // factor by which all adhesion forces is
 	                                            // multiplied
@@ -60,6 +60,8 @@ template <typename Cell> struct SpringConnection {
         bool fixedAdhesion = false;
         double adhLinearConstant = 0.01;
         double adhAngularConstant = 1;
+	double adhDampingRatio = 0.2;
+	double collisionDampingRatio = 0.2;
     };
     
     const params_t parameters;
@@ -108,7 +110,7 @@ template <typename Cell> struct SpringConnection {
 		    collision.restLength;
             
 		collision.c = dampingFromRatio(
-		    COLLISION_DAMPING_RATIO,
+		    parameters.collisionDampingRatio,
 		    cells.first->getBody().getMass() + cells.second->getBody().getMass(),
 		    collision.k);
         
@@ -134,7 +136,7 @@ template <typename Cell> struct SpringConnection {
             * collision.k * parameters.adhLinearConstant * adhCoef;
             
 		adhesion.c = dampingFromRatio(
-		    ADH_DAMPING_RATIO,
+		    parameters.adhDampingRatio,
 		    cells.first->getBody().getMass() + cells.second->getBody().getMass(), adhesion.k);
 	}
 
@@ -160,7 +162,7 @@ template <typename Cell> struct SpringConnection {
 		                            cells.second->getBody().getOrientationRotation());
 		tors.first.k = adhesion.k * area;
 		tors.second.k = adhesion.k * area;
-		tors.first.c = dampingFromRatio(ADH_DAMPING_RATIO,
+		tors.first.c = dampingFromRatio(parameters.adhDampingRatio,
 		                                cells.first->getBody().getMomentOfInertia() +
 		                                    cells.second->getBody().getMomentOfInertia(),
 		                                tors.first.k);
@@ -178,7 +180,7 @@ template <typename Cell> struct SpringConnection {
 		                            cells.second->getBody().getOrientationRotation());
 		flex.first.k = adhesion.k * area * parameters.adhAngularConstant;
 		flex.second.k = adhesion.k * area * parameters.adhAngularConstant;
-		flex.first.c = dampingFromRatio(ADH_DAMPING_RATIO,
+		flex.first.c = dampingFromRatio(parameters.adhDampingRatio,
 		                                cells.first->getBody().getMomentOfInertia() +
 		                                    cells.second->getBody().getMomentOfInertia(),
 		                                flex.first.k);
