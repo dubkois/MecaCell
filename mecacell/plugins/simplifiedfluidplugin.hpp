@@ -66,12 +66,12 @@ template <typename C> struct SimplifiedFluidPlugin {
 				double nbCells = grid.getOrderedVec()[e.first].second.size();
 				for (auto &c : grid.getOrderedVec()[e.first].second) {  // c = exposed cell
 					for (const auto &dir : e.second) {
-						double normalSpeed = (c->getVelocity() - fluidVelocity).dot(dir);
+						double normalSpeed = (c->getBody().getVelocity() - fluidVelocity).dot(dir);
 						if (normalSpeed > 0) {
 							auto F = (-0.5 * dir * fluidDensity * dragCoef * area * normalSpeed *
 							          normalSpeed) /
 							         nbCells;
-							c->receiveForce(F);
+							c->getBody().receiveForce(F);
 						}
 					}
 				}
