@@ -172,14 +172,15 @@ struct GenericConnectionBodyPlugin {
 			if (c->isDead()) {
 				auto cctmp(c->body.cellConnections);
 				for (auto &connection : cctmp) {
-					auto *c0 = connection->cells.first;
-					auto *c1 = connection->cells.second;
+					auto cells = connection->cells;
+					auto *c0 = cells.first;
+					auto *c1 = cells.second;
 					eraseFromVector(connection, c0->body.cellConnections);
 					eraseFromVector(connection, c1->body.cellConnections);
 					c0->connectedCells.erase(c1);
 					c1->connectedCells.erase(c0);
 					assert(c0->id != c1->id);
-					connections.erase(connection->cells);
+					connections.erase(cells);
 				}
 			}
 		}
